@@ -50,12 +50,14 @@
 #+BEGIN_SRC emacs-lisp
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
-  ;(add-to-list 'default-frame-alist '(font . "Monaco-12"))
-  ;(set-face-font 'default "Monaco-12")
-  ;(add-to-list 'default-frame-alist '(font . "Consolas-11"))
-  ;(set-face-font 'default "Consolas-11")
-  (custom-set-faces
-   '(default ((t (:family "Cascadia Mono" :foundry "SAJA" :slant normal :weight regular :height 113 :width normal)))))
+  (add-to-list 'default-frame-alist '(font . "Source Code Pro-10"))
+  (set-face-font 'default "Source Code Pro-10")
+  ;(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
+  ;(set-face-font 'default "Fira Code-10")
+  ;(add-to-list 'default-frame-alist '(font . "Ubuntu Mono-11"))
+  ;(set-face-font 'default "Ubuntu Mono-11")
+  ;(add-to-list 'default-frame-alist '(font . "Monaco-10"))
+  ;(set-face-font 'default "Monaco-10")
 
   (set-fontset-font "fontset-default" '(#x1100 . #xffdc)
                     '("HCR Dotum" . "iso10646-1"))

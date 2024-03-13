@@ -76,8 +76,8 @@
 (setq use-package-always-ensure t)
 
 ;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(use-package 'atom-one-dark-theme)
-(use-package 'gruvbox-theme)
+(use-package atom-one-dark-theme)
+(use-package gruvbox-theme)
 (use-package solarized-theme)
 
 (load-theme 'gruvbox t)
