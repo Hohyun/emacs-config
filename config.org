@@ -3,37 +3,23 @@
 * Default option
 #+BEGIN_SRC emacs-lisp
 (setq default-directory "~")
-
 ;; inihibit cl warning
 (setq byte-compile-warnings '(cl-functions))
-
 (setq inhibit-splash-screen t) 
-;; Go straight to scratch buffer on startup
 (setq inhibit-startup-message t)
-
-;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
-
 ;; shell scripts
 (setq-default sh-basic-offset 2)
 (setq-default sh-indentation 2)
-
 ;; No need for ~ files when editing
 (setq create-lockfiles nil)
-
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
-
-;; disable the toolbar
 (tool-bar-mode -1)
-
-;; disable menu on startup
 (menu-bar-mode -1)
-
-(global-visual-line-mode)  ;; word-wrap
+(global-visual-line-mode)
 (setq backup-inhibited t)
-
 ;; No cursor blinking
 (blink-cursor-mode 0)
 #+END_SRC
@@ -50,15 +36,16 @@
 #+BEGIN_SRC emacs-lisp
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
-  (add-to-list 'default-frame-alist '(font . "Source Code Pro-10"))
-  (set-face-font 'default "Source Code Pro-10")
+  (add-to-list 'default-frame-alist '(font . "Source Code Pro-11"))
+  (set-face-font 'default "Source Code Pro-11")
+  ;(add-to-list 'default-frame-alist '(font . "Cascadia Code-11"))
+  ;(set-face-font 'default "Cascadia Code-11")
   ;(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
   ;(set-face-font 'default "Fira Code-10")
   ;(add-to-list 'default-frame-alist '(font . "Ubuntu Mono-11"))
   ;(set-face-font 'default "Ubuntu Mono-11")
   ;(add-to-list 'default-frame-alist '(font . "Monaco-10"))
   ;(set-face-font 'default "Monaco-10")
-
   (set-fontset-font "fontset-default" '(#x1100 . #xffdc)
                     '("HCR Dotum" . "iso10646-1"))
   (set-fontset-font "fontset-default" '(#xe0bc . #xf66e)
@@ -94,7 +81,7 @@
 (setq use-package-always-ensure t)
 #+END_SRC
 
-* UI
+* Theme & Mode line
 ** color theme
 #+BEGIN_SRC emacs-lisp
 ;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
@@ -108,7 +95,6 @@
 ;(load-theme 'solarized-dark t)
 #+END_SRC
 
-
 ** Powerline
 #+BEGIN_SRC emacs-lisp
 (use-package powerline
@@ -118,60 +104,89 @@
   (powerline-center-theme))
 #+END_SRC
 
+* Completion
+#+BEGIN_SRC emacs-lisp
+;; Use builtin completion engine
+(bind-key* "C-." #'completion-at-point)
+
+; The `vertico' package applies a vertical layout to the minibuffer.
+;; It also pops up the minibuffer eagerly so we can see the available
+;; options without further interactions.  This package is very fast
+;; and "just works", though it also is highly customisable in case we
+;; need to modify its behaviour.
+(use-package vertico
+  :custom
+  (vertico-count 22)
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+
+;; The built-in `savehist-mode' saves minibuffer histories.  Vertico
+;; can then use that information to put recently selected options at
+;; the top.
+(savehist-mode 1)
+
+;; The `marginalia' package provides helpful annotations next to
+;; completion candidates in the minibuffer.  The information on
+;; display depends on the type of content.  If it is about files, it
+;; shows file permissions and the last modified date.  If it is a
+;; buffer, it shows the buffer's size, major mode, and the like.
+(use-package marginalia
+  :config (marginalia-mode))
+
+;; The `orderless' package lets the minibuffer use an out-of-order
+;; pattern matching algorithm.  It matches space-separated words or
+;; regular expressions in any order.
+(use-package orderless
+  :custom (completion-styles '(orderless basic)))
+
+;; The `consult' package provides lots of commands that are enhanced
+;; variants of basic, built-in functionality.  One of the headline
+;; features of `consult' is its preview facility, where it shows in
+;; another Emacs window the context of what is currently matched in
+;; the minibuffer.
+(use-package consult
+  :bind (("C-c i"     . consult-imenu)
+         ("C-c b"     . consult-project-buffer)
+         ("C-x b"     . consult-buffer)
+         ("C-c B"     . consult-bookmark)
+         ("C-c y"     . consult-yank-pop)
+         ("C-x C-f"   . find-file)
+         ("C-c C-h a" . describe-symbol)
+         ("M-s M-g"   . consult-ripgrep)
+         ("M-s M-f"   . consult-find)
+         ("M-s M-o"   . consult-outline)
+         ("M-s M-l"   . consult-line)))
+
+;; The `embark' package lets you target the thing or context at point
+;; and select an action to perform on it.  Use the `embark-act'
+;; command while over something to find relevant commands.
+;;
+;; When inside the minibuffer, `embark' can collect/export the
+;; contents to a fully fledged Emacs buffer.  The `embark-collect'
+;; command retains the original behaviour of the minibuffer, meaning
+;; that if you navigate over the candidate at hit RET, it will do what
+;; the minibuffer would have done.  In contrast, the `embark-export'
+;; command reads the metadata to figure out what category this is and
+;; places them in a buffer whose major mode is specialised for that
+;; type of content.  For example, when we are completing against
+;; files, the export will take us to a `dired-mode' buffer; when we
+;; preview the results of a grep, the export will put us in a
+;; `grep-mode' buffer.
+;;
+(use-package embark
+  :ensure t
+  :bind (("C-." . embark-act)
+         :map minibuffer-local-map
+         ("C-c C-c" . embark-collect)
+         ("C-c C-e" . embark-export)))
+
+;; The `embark-consult' package is glue code to tie together `embark'
+;; and `consult'.
+(use-package embark-consult :after (embark consult))
+#+END_SRC
+
 * Navigation: 
-** uniquify, recentf
-#+BEGIN_SRC emacs-lisp
-;; Emacs gives the buffers distinct names when several buffers visit identically-named files.
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
-
-;; turn on recent file mode
-(setq recentf-save-file (concat user-emacs-directory ".recentf"))
-(require 'recentf)
-(recentf-mode 1)
-(setq recentf-max-menu-items 40)
-#+END_SRC
-
-** ido
-#+BEGIN_SRC emacs-lisp
-(use-package ido-completing-read+
-  :bind ("C-x C-b" . ibuffer)
-  :init
-  ;; This allows partial matches, e.g. "tl" will match "Tyrion Lannister"
-  (setq ido-enable-flex-matching t)
-
-  ;; Turn this behavior off because it's annoying
-  (setq ido-use-filename-at-point nil)
-
-  ;; Don't try to match file across all "work" directories; only match files
-  ;; in the current directory displayed in the minibuffer
-  (setq ido-auto-merge-work-directories-length -1)
-
-  ;; Includes buffer names of recently open files, even if they're not
-  ;; open now
-  (setq ido-use-virtual-buffers t)
-
-  :config
-  (ido-mode t)
-  ;; This enables ido in all contexts where it could be useful, not just
-  ;; for selecting buffer and file names
-  (ido-ubiquitous-mode t)
-  (ido-everywhere t))
-#+END_SRC
-
-
-** smex
-#+BEGIN_SRC emacs-lisp
-;; Enhances M-x to allow easier execution of commands. 
-(use-package smex
-  :bind ("M-x" . smex)
-  :init
-  (setq smex-save-file (concat user-emacs-directory ".smex-items"))
-  :config
-  (smex-initialize))
-#+END_SRC
-
-
 ** projectile
 #+BEGIN_SRC emacs-lisp
 (use-package projectile)
@@ -188,43 +203,12 @@
   :bind ("C-." . ace-jump-mode))
 #+END_SRC
 
-* Editing
+* COMMENT Editing
 #+BEGIN_SRC emacs-lisp
-;; Auto completion
-(use-package company
-  :config
-  (global-company-mode))
-
-(global-set-key (kbd "M-/") 'hippie-expand)
-
-;; Lisp-friendly hippie expand
-(setq hippie-expand-try-functions-list
-      '(try-expand-dabbrev
-        try-expand-dabbrev-all-buffers
-        try-expand-dabbrev-from-kill
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol))
-
-;; Highlights matching parenthesis
-(show-paren-mode 1)
-
-;; Interactive search key bindings. By default, C-s runs
-;; isearch-forward, so this swaps the bindings.
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s") 'isearch-forward)
-(global-set-key (kbd "C-M-r") 'isearch-backward)
-
-;; Don't use hard tabs
-(setq-default indent-tabs-mode nil)
-
-;; When you visit a file, point goes to the last place where it
-;; was when you previously visited the same file.
-;; http://www.emacswiki.org/emacs/SavePlace
-(require 'saveplace)
-(setq-default save-place t)
-;; keep track of saved places in ~/.emacs.d/places
-(setq save-place-file (concat user-emacs-directory "places"))
+;;CTRLF (pronounced "control F") is an intuitive and efficient
+;;solution for single-buffer text search
+(use-package ctrlf
+ :config (ctrlf-mode))
 
 ;; comments
 (defun toggle-comment-on-line ()
@@ -233,26 +217,123 @@
   (comment-or-uncomment-region (line-beginning-position) (line-end-position)))
 (global-set-key (kbd "C-;") 'toggle-comment-on-line)
 
-;; use 2 spaces for tabs
-(defun die-tabs ()
-  (interactive)
-  (set-variable 'tab-width 2)
-  (mark-whole-buffer)
-  (untabify (region-beginning) (region-end))
-  (keyboard-quit))
-
-;; fix weird os x kill error
-(defun ns-get-pasteboard ()
-  "Returns the value of the pasteboard, or nil for unsupported formats."
-  (condition-case nil
-      (ns-get-selection-internal 'CLIPBOARD)
-    (quit nil)))
-
-(setq electric-indent-mode nil)
+;; Highlights matching parenthesis
+(show-paren-mode 1)
 #+END_SRC
 
-* Elisp (paredit, eldoc)
-** paredit
+* Magit
+#+BEGIN_SRC emacs-lisp
+;; git integration
+(use-package magit
+  :pin melpa-stable
+  :bind ("C-x g" . magit-status))
+#+END_SRC
+
+* Org-mode
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets)
+
+(use-package org
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
+         ("C-c b" . org-iswitchb))
+  :init
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+  (setq org-log-done t)
+  (setq org-directory "~/org")
+  (setq org-agenda-files 
+        (list "~/org/work.org"
+              "~/org/home.org"
+              "~/org/faith.org"))
+  (setq org-default-notes-file "~/org/taskdiary.org")
+
+  (setq org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-confirm-babel-evaluate nil
+        org-edit-src-content-indentation 0)
+
+  (setq org-capture-templates
+    '(("a" "Appointment" entry (file+headling "~/org/taskdiary.org" "Calendar")
+       "* APPT %^{Description} %^g
+       %?
+       Added: %U")
+      ("n" "Notes" entry (file+datetree "~/org/taskdiary.org")
+       "* %^{Description} %^g 
+       %?
+       Added: %U")
+      ("t" "Tast Diary" entry (file+datetree "~/org/taskdiary.org")
+       "* TODO %^{Description} %^g 
+       %?
+       Added: %U")
+      ("j" "Journal" entry (file+datetree "~/org/journal.org")
+       "** %^{Heading}")
+      ("l" "Log Time" entry (file+datetree "~/org/timelog.org")
+       "** %U - %^{Activity} :TIME:")))
+
+  (defun +org/opened-buffer-files ()
+    "Return the list of files currently opened in emacs"
+    (delq nil
+          (mapcar (lambda (x)
+                    (if (and (buffer-file-name x)
+                             (string-match "\\.org$"
+                                           (buffer-file-name x)))
+                        (buffer-file-name x)))
+                    (buffer-list))))
+
+  (setq org-refile-targets '((+org/opened-buffer-files :maxlevel . 9)))
+  (setq org-refile-use-outline-path 'file)
+    
+  ;; makes org-refile outline working with helm/ivy
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-refile-allow-creating-parent-nodes 'confirm)
+
+  :config
+    ;;(use-package org-bullets)
+)
+#+END_SRC
+
+* Ledger mode
+#+BEGIN_SRC emacs-lisp
+  (use-package ledger-mode
+    :defer t
+    :mode ("\\.ledger$" "\\.dat$"))
+#+END_SRC
+
+* AUCTeX
+#+BEGIN_SRC emacs-lisp
+(use-package tex
+  :ensure auctex
+  :init
+  (add-hook 'LaTeX-mode-hook #'diatheke-mode)
+  (setq-default TeX-engine 'xetex)
+  (setq TeX-PDF-mode t)
+  (setq TeX-source-correlate-mode t)
+  (setq TeX-source-correlate-method '((pdf . synctex)))
+  (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
+  ;(setq TeXV-view-program-list
+  ;     '(("PDF Viewer" "C:/Users/jinair/AppData/Local/SumatraPDF/SumatraPdf.exe mode-io-correlate -forward-search %b %n %o")))
+  (eval-after-load "tex"
+    '(add-to-list 'TeX-expand-list '("%a" (lambda nil (expand-file-name (buffer-file-name))))))
+  (setq TeXV-view-program-list
+       '(("PDF Viewer" ("okular --unique %o" (mode-io-correlate "#src:%n%a")))))
+  (setenv "PATH" (concat "/Library/TeX/texbin" ":" (getenv "PATH")))
+
+  (add-hook 'LaTeX-mode-hook
+            (lambda()
+              (add-to-list 'TeX-command-list
+                           '("XeLaTeX" "%`xelatex%(mode)%' %t" TeX-run-TeX nil t))
+              (setq TeX-command-default "XeLaTeX")
+              (setq TeX-save-query nil)
+              (setq TeX-show-compilation t)))
+
+  (add-hook 'LaTeX-mode-hook #'diatheke-mode))
+#+END_SRC
+
+* Languages
+** Elisp (paredit, eldoc)
+*** paredit
 ;; Automatically load paredit when editing a lisp file
 ;; More at http://www.emacswiki.org/emacs/ParEdit
 
@@ -270,7 +351,7 @@
   (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t))
 #+END_SRC
 
-** eldoc-mode
+*** eldoc-mode
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
 #+BEGIN_SRC emacs-lisp
@@ -279,7 +360,7 @@
 (add-hook 'ielm-mode-hook 'eldoc-mode)
 #+END_SRC
 
-* Clojure (clojure-mode, cider, rainbow-delimeters)
+** Clojure (clojure-mode, cider, rainbow-delimeters)
 ** clojure
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters
@@ -338,7 +419,7 @@
   (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
 #+END_SRC
 
-* Web development (tagedit, emmet-mode, web-mode)
+** Web development (tagedit, emmet-mode, web-mode)
 #+BEGIN_SRC emacs-lisp
 ;; edit html like sexps
 (use-package tagedit
@@ -382,120 +463,8 @@
      (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))))
 #+END_SRC
 
-* AUCTeX
-#+BEGIN_SRC emacs-lisp
-(use-package tex
-  :ensure auctex
-  :init
-  (add-hook 'LaTeX-mode-hook #'diatheke-mode)
-  (setq-default TeX-engine 'xetex)
-  (setq TeX-PDF-mode t)
-  (setq TeX-source-correlate-mode t)
-  (setq TeX-source-correlate-method '((pdf . synctex)))
-  (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
-  ;(setq TeXV-view-program-list
-  ;     '(("PDF Viewer" "C:/Users/jinair/AppData/Local/SumatraPDF/SumatraPdf.exe mode-io-correlate -forward-search %b %n %o")))
-  (eval-after-load "tex"
-    '(add-to-list 'TeX-expand-list '("%a" (lambda nil (expand-file-name (buffer-file-name))))))
-  (setq TeXV-view-program-list
-       '(("PDF Viewer" ("okular --unique %o" (mode-io-correlate "#src:%n%a")))))
-  (setenv "PATH" (concat "/Library/TeX/texbin" ":" (getenv "PATH")))
 
-  (add-hook 'LaTeX-mode-hook
-            (lambda()
-              (add-to-list 'TeX-command-list
-                           '("XeLaTeX" "%`xelatex%(mode)%' %t" TeX-run-TeX nil t))
-              (setq TeX-command-default "XeLaTeX")
-              (setq TeX-save-query nil)
-              (setq TeX-show-compilation t)))
-
-  (add-hook 'LaTeX-mode-hook #'diatheke-mode))
-#+END_SRC
-
-* Org-mode
-#+BEGIN_SRC emacs-lisp
-(use-package org-bullets)
-
-(use-package ox-reveal)
-
-(use-package org
-  :bind (("C-c l" . org-store-link)
-         ("C-c a" . org-agenda)
-         ("C-c c" . org-capture)
-         ("C-c b" . org-iswitchb))
-  :init
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  (setq org-reveal-root "file:///home/hohyun/projects/reveal.js")
-
-  (setq org-log-done t)
-  (setq org-directory "~/org")
-  (setq org-agenda-files 
-        (list "~/org/work.org"
-              "~/org/home.org"
-              "~/org/faith.org"))
-  (setq org-default-notes-file "~/org/taskdiary.org")
-
-  (setq org-src-fontify-natively t
-        org-src-tab-acts-natively t
-        org-confirm-babel-evaluate nil
-        org-edit-src-content-indentation 0)
-
-  (setq org-capture-templates
-    '(("a" "Appointment" entry (file+headling "~/org/taskdiary.org" "Calendar")
-       "* APPT %^{Description} %^g
-       %?
-       Added: %U")
-      ("n" "Notes" entry (file+datetree "~/org/taskdiary.org")
-       "* %^{Description} %^g 
-       %?
-       Added: %U")
-      ("t" "Tast Diary" entry (file+datetree "~/org/taskdiary.org")
-       "* TODO %^{Description} %^g 
-       %?
-       Added: %U")
-      ("j" "Journal" entry (file+datetree "~/org/journal.org")
-       "** %^{Heading}")
-      ("l" "Log Time" entry (file+datetree "~/org/timelog.org")
-       "** %U - %^{Activity} :TIME:")))
-
-  (defun +org/opened-buffer-files ()
-    "Return the list of files currently opened in emacs"
-    (delq nil
-          (mapcar (lambda (x)
-                    (if (and (buffer-file-name x)
-                             (string-match "\\.org$"
-                                           (buffer-file-name x)))
-                        (buffer-file-name x)))
-                    (buffer-list))))
-
-  (setq org-refile-targets '((+org/opened-buffer-files :maxlevel . 9)))
-  (setq org-refile-use-outline-path 'file)
-    
-  ;; makes org-refile outline working with helm/ivy
-  (setq org-outline-path-complete-in-steps nil)
-  (setq org-refile-allow-creating-parent-nodes 'confirm)
-
-  :config
-    ;;(use-package org-bullets)
-)
-#+END_SRC
-
-* Magit
-#+BEGIN_SRC emacs-lisp
-;; git integration
-(use-package magit
-  :pin melpa-stable
-  :bind ("C-x g" . magit-status))
-#+END_SRC
-
-* Ledger mode
-#+BEGIN_SRC emacs-lisp
-  (use-package ledger-mode
-    :defer t
-    :mode ("\\.ledger$" "\\.dat$"))
-#+END_SRC
-
-* Rust
+** Rust
 #+BEGIN_SRC emacs-lisp
 (use-package rust-mode)
 
@@ -518,7 +487,7 @@
 
 #+END_SRC
 
-* GoLang
+** GoLang
 #+BEGIN_SRC emacs-lisp
 (use-package go-mode)
 
@@ -526,7 +495,7 @@
   :hook (go-mode . lsp-deferred))
 #+END_SRC
 
-* Haskell
+** Haskell
 #+BEGIN_SRC emacs-lisp
 (use-package hindent
   :hook
@@ -555,4 +524,13 @@
    ("C-c C-l" . haskell-process-load-or-reload)
    ("C-c C-c" . haskell-process-cabal-build)
    ("C-c c" . haskell-process-cabal)))
+#+END_SRC
+
+* Snippets
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :defer 15 ;; takes a while to load, so do it async
+  :diminish yas-minor-mode
+  :config (yas-global-mode)
+  :custom (yas-prompt-functions '(yas-completing-prompt)))
 #+END_SRC
