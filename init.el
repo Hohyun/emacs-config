@@ -29,7 +29,16 @@
  '(haskell-process-suggest-remove-import-lines t)
  '(haskell-process-type 'stack-ghci)
  '(haskell-stylish-on-save t)
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(ace-jump-mode atom-one-dark-theme auctex cargo cider
+		   clojure-mode-extra-font-locking company ctrlf
+		   embark-consult embark-vc emmet-mode go-mode
+		   gruvbox-theme haskell-mode hindent
+		   ido-completing-read+ ledger-mode lsp-mode
+		   marginalia orderless org-bullets ox-reveal paredit
+		   powerline prescient projectile rainbow-delimiters
+		   rust-mode smex solarized-theme tagedit tree-sitter
+		   tree-sitter-langs vertico web-mode yasnippet))
  '(warning-suppress-types '((use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

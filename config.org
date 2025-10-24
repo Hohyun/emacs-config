@@ -1,6 +1,6 @@
 # -*- mode: org; coding: utf-8; -*-
-
-* Default option
+* My config
+** Default option
 #+BEGIN_SRC emacs-lisp
 (setq default-directory "~")
 ;; inihibit cl warning
@@ -24,7 +24,7 @@
 (blink-cursor-mode 0)
 #+END_SRC
 
-* Korean language environment
+** Korean language environment
 #+BEGIN_SRC emacs-lisp
 (global-set-key [(shift space)] 'toggle-input-method)
 (set-language-environment "Korean")
@@ -32,7 +32,7 @@
 (setq default-korean-keyboard "3f")
 #+END_SRC
 
-* Font setup
+** Font setup
 #+BEGIN_SRC emacs-lisp
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
@@ -56,14 +56,14 @@
 (add-hook 'sever-switch-hook (my-font-setup))
 #+END_SRC
 
-* Custom lisp file path setup
+** Custom lisp file path setup
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/lisp")
 ;(load "~/.emacs.d/lisp/my-abbrev.el")
 ;(require 'diatheke)
 #+END_SRC
 
-* Package management setup
+** Package management setup
 #+BEGIN_SRC emacs-lisp
 (require 'package)
 (setq package-archives
@@ -81,7 +81,7 @@
 (setq use-package-always-ensure t)
 #+END_SRC
 
-* Theme & Mode line
+** Theme & Mode line
 ** color theme
 #+BEGIN_SRC emacs-lisp
 ;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
@@ -104,7 +104,7 @@
   (powerline-center-theme))
 #+END_SRC
 
-* Completion
+** Completion
 #+BEGIN_SRC emacs-lisp
 ;; Use builtin completion engine
 (bind-key* "C-." #'completion-at-point)
@@ -139,6 +139,21 @@
 ;; regular expressions in any order.
 (use-package orderless
   :custom (completion-styles '(orderless basic)))
+
+;; Corfu enhances in-buffer completion with a small completion popup. The
+;; current candidates are shown in a popup below or above the point, and
+;; can be selected by moving up and down. Corfu is the minimalistic
+;;in-buffer completion counterpart of the Vertico minibuffer UI.
+(use-package corfu
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  :init
+  (global-corfu-mode))
+
+;; A few more useful configurations...
+(use-package emacs
+  :custom
+  (tab-always-indent 'complete))
 
 ;; The `consult' package provides lots of commands that are enhanced
 ;; variants of basic, built-in functionality.  One of the headline
@@ -186,7 +201,7 @@
 (use-package embark-consult :after (embark consult))
 #+END_SRC
 
-* Navigation: 
+** Navigation: 
 ** projectile
 #+BEGIN_SRC emacs-lisp
 (use-package projectile)
@@ -203,7 +218,7 @@
   :bind ("C-." . ace-jump-mode))
 #+END_SRC
 
-* COMMENT Editing
+** Editing
 #+BEGIN_SRC emacs-lisp
 ;;CTRLF (pronounced "control F") is an intuitive and efficient
 ;;solution for single-buffer text search
@@ -221,7 +236,7 @@
 (show-paren-mode 1)
 #+END_SRC
 
-* Magit
+** Magit
 #+BEGIN_SRC emacs-lisp
 ;; git integration
 (use-package magit
@@ -229,7 +244,7 @@
   :bind ("C-x g" . magit-status))
 #+END_SRC
 
-* Org-mode
+** Org-mode
 #+BEGIN_SRC emacs-lisp
 (use-package org-bullets)
 
@@ -294,14 +309,14 @@
 )
 #+END_SRC
 
-* Ledger mode
+** Ledger mode
 #+BEGIN_SRC emacs-lisp
   (use-package ledger-mode
     :defer t
     :mode ("\\.ledger$" "\\.dat$"))
 #+END_SRC
 
-* AUCTeX
+** AUCTeX
 #+BEGIN_SRC emacs-lisp
 (use-package tex
   :ensure auctex
@@ -331,9 +346,18 @@
   (add-hook 'LaTeX-mode-hook #'diatheke-mode))
 #+END_SRC
 
-* Languages
-** Elisp (paredit, eldoc)
-*** paredit
+** Languages
+*** Tree-sitter
+#+begin_src emacs-lisp
+(use-package tree-sitter
+  :config (global-tree-sitter-mode)
+  :after (tree-sitter-hl-mode))
+  
+(use-package tree-sitter-langs)
+#+end_src
+
+*** Elisp (paredit, eldoc)
+**** paredit
 ;; Automatically load paredit when editing a lisp file
 ;; More at http://www.emacswiki.org/emacs/ParEdit
 
@@ -351,7 +375,7 @@
   (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t))
 #+END_SRC
 
-*** eldoc-mode
+**** eldoc-mode
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
 #+BEGIN_SRC emacs-lisp
@@ -360,142 +384,7 @@
 (add-hook 'ielm-mode-hook 'eldoc-mode)
 #+END_SRC
 
-** Clojure (clojure-mode, cider, rainbow-delimeters)
-** clojure
-#+BEGIN_SRC emacs-lisp
-(use-package rainbow-delimiters
-  :commands rainbow-delimiters-mode)
-
-(use-package clojure-mode
-  :commands clojure-mode
-  :init
-  ;; Enable paredit for Clojure
-  (add-hook 'clojure-mode-hook #'enable-paredit-mode)
-  ;; This is useful for working with camel-case tokens (e.g. JavaClassName)
-  (add-hook 'clojure-mode-hook #'subword-mode)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
-  ;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
-  ;; syntax hilighting for midje
-  (add-hook 'clojure-mode-hook
-            (lambda ()
-              (setq inferior-lisp-program "lein repl")
-              (font-lock-add-keywords
-              nil
-              '(("(\\(facts?\\)"
-                (1 font-lock-keyword-face))
-                ("(\\(background?\\)"
-                (1 font-lock-keyword-face))))
-                (define-clojure-indent (fact 1))
-                (define-clojure-indent (facts 1))))
-  :config
-  (use-package clojure-mode-extra-font-locking))
-#+END_SRC
-
-** cider
-#+BEGIN_SRC emacs-lisp
-(use-package cider
-  :commands cider-jack-in
-  :init
-  ;; auto completion
-  (add-hook 'cider-repl-mode-hook #'company-mode)
-  (add-hook 'cider-mode-hook #'company-mode)
-  ;; provides minibuffer documentation for the code you're typing into the repl
-  (add-hook 'cider-mode-hook 'eldoc-mode)
-  ;; enable paredit in your REPL
-  (add-hook 'cider-repl-mode-hook 'paredit-mode)
-  ;; go right to the REPL buffer when it's finished connecting
-  (setq cider-repl-pop-to-buffer-on-connect t)
-  ;; When there's a cider error, show its buffer and switch to it
-  (setq cider-show-error-buffer t)
-  (setq cider-auto-select-error-buffer t)
-  ;; Where to store the cider history.
-  (setq cider-repl-history-file "~/.emacs.d/cider-history")
-  ;; Wrap when navigating history.
-  (setq cider-repl-wrap-history t)
-  ;; Use clojure mode for other extensions
-  (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
-  ;;(add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
-#+END_SRC
-
-** Web development (tagedit, emmet-mode, web-mode)
-#+BEGIN_SRC emacs-lisp
-;; edit html like sexps
-(use-package tagedit
-  :commands (tagedit-mode tagedit-add-paredit-like-keybindings))
-
-(use-package emmet-mode
-  :init
-  (add-hook 'clojure-mode-hook 'emmet-mode)
-  (add-hook 'sgml-mode-hook 'emmet-mode)
-  (add-hook 'css-mode-hook 'emmet-mode))
-
-(use-package web-mode
-  :init 
-  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-
-  ;; Enable line numbers
-  ;; set type of line numbering (global variable)
-  (setq display-line-numbers-type 'relative) 
-
-  ;; activate line numbering in all buffers/modes
-  (global-display-line-numbers-mode)
-
-  ;; change spacing at top of buffer
-  (add-to-list 'default-frame-alist '(internal-border-width . 7)))
-
-;; javascript / html
-(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
-(add-hook 'js-mode-hook 'subword-mode)
-(add-hook 'html-mode-hook 'subword-mode)
-(setq js-indent-level 2)
-(eval-after-load "sgml-mode"
-  '(progn
-     (tagedit-add-paredit-like-keybindings)
-     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))))
-#+END_SRC
-
-
-** Rust
-#+BEGIN_SRC emacs-lisp
-(use-package rust-mode)
-
-(use-package cargo
-  :hook 
-  (rust-mode . cargo-minor-mode))
-
-(use-package racer
-  :ensure rust-mode
-
-  :init
-  (setq racer-cmd "c:/Users/jinair/.cargo/bin/racer")
-  (setq racer-rust-src-path "C:/Users/jinair/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust/src")
-  (setq company-tooltip-align-annotations t)
-
-  :hook
-  (rust-mode . racer-mode)
-  (racer-mode . eldoc-mode)
-  (racer-mode . company-mode))
-
-#+END_SRC
-
-** GoLang
-#+BEGIN_SRC emacs-lisp
-(use-package go-mode)
-
-(use-package lsp-mode
-  :hook (go-mode . lsp-deferred))
-#+END_SRC
-
-** Haskell
+*** Haskell
 #+BEGIN_SRC emacs-lisp
 (use-package hindent
   :hook
@@ -526,7 +415,7 @@
    ("C-c c" . haskell-process-cabal)))
 #+END_SRC
 
-* Snippets
+** Snippets
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
   :defer 15 ;; takes a while to load, so do it async
