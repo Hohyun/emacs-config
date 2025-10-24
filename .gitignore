@@ -1,0 +1,13 @@
+.git/
+auto-save-list/
+elpa/
+org-persist/
+server/
+snippets/
+transient/
+var/
+.recentf
+.smex-items
+config.el
+history
+projectile-bookmarks.eld
