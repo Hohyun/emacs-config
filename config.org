@@ -36,10 +36,10 @@
 #+BEGIN_SRC emacs-lisp
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
-  (add-to-list 'default-frame-alist '(font . "Source Code Pro-11"))
-  (set-face-font 'default "Source Code Pro-11")
-  ;(add-to-list 'default-frame-alist '(font . "Cascadia Code-11"))
-  ;(set-face-font 'default "Cascadia Code-11")
+  ;; (add-to-list 'default-frame-alist '(font . "Source Code Pro-11"))
+  ;; (set-face-font 'default "Source Code Pro-11")
+  (add-to-list 'default-frame-alist '(font . "Cascadia Code Light-11"))
+  (set-face-font 'default "Cascadia Code Light-11")
   ;(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
   ;(set-face-font 'default "Fira Code-10")
   ;(add-to-list 'default-frame-alist '(font . "Ubuntu Mono-11"))
@@ -423,3 +423,11 @@
   :config (yas-global-mode)
   :custom (yas-prompt-functions '(yas-completing-prompt)))
 #+END_SRC
+** Others
+*** Show-font
+#+begin_src emacs-lisp
+(use-package show-font
+  :bind
+  (("C-c s f" . show-font-select-preview)
+   ("C-c s t" . show-font-tabulated)))
+#+end_src
