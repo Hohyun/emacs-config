@@ -46,6 +46,26 @@
 (my-font-setup)
 (add-hook 'sever-switch-hook (my-font-setup))
 
+;; (load-theme 'gruvbox t)
+
+(use-package standard-themes
+  :ensure t
+  :bind
+  (("<f5>" . standard-themes-rotate)
+   ("C-<f5>" . standard-themes-select)
+   ("M-<f5>" . standard-themes-load-random))
+  :config
+  ;; (setq standard-themes-mixed-fonts t)
+  ;; (setq standard-themes-italic-constructs t)
+  (standard-themes-select 'standard-light)
+)
+
+(use-package powerline
+  :init
+  (setq powerline-default-separator 'wave)
+  :config
+  (powerline-center-theme))
+
 (add-to-list 'load-path "~/.emacs.d/lisp")
 ;(load "~/.emacs.d/lisp/my-abbrev.el")
 ;(require 'diatheke)
@@ -64,30 +84,6 @@
 
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
-
-;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-;; (load-theme 'gruvbox t)
-;; (load-theme 'atom-one-dark t)
-
-(use-package modus-themes
-  :ensure t)
-
-(use-package standard-themes
-  :ensure t
-  :bind
-  (("<f5>" . modus-themes-rotate)
-   ("C-<f5>" . modus-themes-select)
-   ("M-<f5>" . mouds-themes-load-random))
-  :config
-  ;; (setq modus-themes-mixed-fonts t)
-  ;; (setq modus-themes-italic-constructs t)
-  (modus-themes-load-theme 'standard-light-tinted))
-
-(use-package powerline
-  :init
-  (setq powerline-default-separator 'wave)
-  :config
-  (powerline-center-theme))
 
 ;; Use builtin completion engine
 (bind-key* "C-." #'completion-at-point)
@@ -368,6 +364,13 @@
    ("C-c C-l" . haskell-process-load-or-reload)
    ("C-c C-c" . haskell-process-cabal-build)
    ("C-c c" . haskell-process-cabal)))
+
+(use-package copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el"
+            :rev :newest
+            :branch "main")
+  :hook
+  (prog-mode . copilot-mode))
 
 (use-package yasnippet
   :defer 15 ;; takes a while to load, so do it async
