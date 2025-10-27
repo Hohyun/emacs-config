@@ -32,17 +32,11 @@
  '(haskell-process-type 'stack-ghci)
  '(haskell-stylish-on-save t)
  '(package-selected-packages
-   '(ace-jump-mode atom-one-dark-theme auctex cargo cider
-		   clojure-mode-extra-font-locking company copilot
-		   corfu ctrlf editorconfig-generate embark-consult
-		   embark-vc emmet-mode go-mode gruvbox-theme
-		   haskell-mode hindent ido-completing-read+
-		   ledger-mode lsp-mode marginalia modus-themes
-		   orderless org-bullets ox-reveal paredit powerline
-		   prescient projectile pulsar rainbow-delimiters
-		   rust-mode show-font smex solarized-theme
-		   standard-themes tagedit tree-sitter-langs vertico
-		   web-mode yasnippet))
+   '(auctex copilot corfu ctrlf embark-consult haskell-mode hindent
+	    ledger-mode magit marginalia modus-themes orderless
+	    org-bullets org-roam paredit powerline projectile pulsar
+	    show-font sqlite3 standard-themes tree-sitter-langs
+	    vertico yasnippet))
  '(package-vc-selected-packages
    '((copilot :url "https://github.com/copilot-emacs/copilot.el" :branch
 	      "main")))

@@ -1,6 +1,7 @@
-# -*- mode: org; coding: utf-8; lexical-binding: t; -*-
+# -*- mode: org; coding: utf-8; -*-
 * Default option
 #+BEGIN_SRC emacs-lisp
+;; lexical-binding: t;
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
@@ -181,22 +182,15 @@
          ("M-s M-o"   . consult-outline)
          ("M-s M-l"   . consult-line)))
 
+;; The `embark-consult' package is glue code to tie together `embark'
+;; and `consult'.
+(use-package embark-consult
+  :ensure t
+  :after (embark consult))
+
 ;; The `embark' package lets you target the thing or context at point
 ;; and select an action to perform on it.  Use the `embark-act'
 ;; command while over something to find relevant commands.
-;;
-;; When inside the minibuffer, `embark' can collect/export the
-;; contents to a fully fledged Emacs buffer.  The `embark-collect'
-;; command retains the original behaviour of the minibuffer, meaning
-;; that if you navigate over the candidate at hit RET, it will do what
-;; the minibuffer would have done.  In contrast, the `embark-export'
-;; command reads the metadata to figure out what category this is and
-;; places them in a buffer whose major mode is specialised for that
-;; type of content.  For example, when we are completing against
-;; files, the export will take us to a `dired-mode' buffer; when we
-;; preview the results of a grep, the export will put us in a
-;; `grep-mode' buffer.
-;;
 (use-package embark
   :ensure t
   :bind (("C-." . embark-act)
@@ -204,9 +198,6 @@
          ("C-c C-c" . embark-collect)
          ("C-c C-e" . embark-export)))
 
-;; The `embark-consult' package is glue code to tie together `embark'
-;; and `consult'.
-(use-package embark-consult :after (embark consult))
 #+END_SRC
 
 * Projectile
@@ -313,6 +304,30 @@
   :config
     ;;(use-package org-bullets)
 )
+#+END_SRC
+
+* org-roam
+#+BEGIN_SRC emacs-lisp
+(use-package org-roam
+  :hook
+  (after-intit . org-roam-mode)
+  :custom
+  (find-file-visit-truname t)
+  (org-roam-db-autosync-mode)
+  (org-roam-directory "~/org-roam/")
+  (org-roam-completion-everywhere t)
+  (org-roam-completion-system 'default)
+  (org-roam-capture-templates
+   '(("d" default plain
+      "%?"
+      :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+title: ${title}\n")
+      :unnarrowed t)))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
 #+END_SRC
 
 * Ledger mode
@@ -422,16 +437,14 @@
 #+END_SRC
 
 * Copilot
-# #+begin_src emacs-lisp
-# (use-package copilot
-#   :vc (:url "https://github.com/copilot-emacs/copilot.el"
-#             :rev :newest
-#             :branch "main")
-#   :hook
-#   (prog-mode . copilot-mode)
-#   :config
-#   (setopt copilot-lsp-settings '(:github-enterprise (:uri "https://example2.ghe.com"))))
-# #+end_src
+#+begin_src emacs-lisp
+(use-package copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el"
+            :rev :newest
+            :branch "main")
+  :hook
+  (prog-mode . copilot-mode))
+#+end_src
 
 * Snippets
 #+BEGIN_SRC emacs-lisp

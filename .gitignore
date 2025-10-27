@@ -1,4 +1,5 @@
 .git/
+.cache/
 auto-save-list/
 elpa/
 org-persist/
@@ -8,6 +9,7 @@ transient/
 var/
 .recentf
 .smex-items
-config.el
 history
+project
 projectile-bookmarks.eld
+config.el
