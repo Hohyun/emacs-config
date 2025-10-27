@@ -1,30 +1,29 @@
-# -*- mode: org; coding: utf-8; -*-
-* My config
-** Default option
+# -*- mode: org; coding: utf-8; lexical-binding: t; -*-
+* Default option
 #+BEGIN_SRC emacs-lisp
-(setq default-directory "~")
-;; inihibit cl warning
-(setq byte-compile-warnings '(cl-functions))
-(setq inhibit-splash-screen t) 
-(setq inhibit-startup-message t)
-(fset 'yes-or-no-p 'y-or-n-p)
-;; shell scripts
-(setq-default sh-basic-offset 2)
-(setq-default sh-indentation 2)
-;; No need for ~ files when editing
-(setq create-lockfiles nil)
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
+
+;; inihibit cl warning
+(setq byte-compile-warnings '(cl-functions))
+
+(setq default-directory "~")
+(setq inhibit-splash-screen t) 
+(setq inhibit-startup-message t)
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (tool-bar-mode -1)
 (menu-bar-mode -1)
-(global-visual-line-mode)
-(setq backup-inhibited t)
-;; No cursor blinking
 (blink-cursor-mode 0)
+(global-visual-line-mode)
+
+;; No need for ~ files when editing
+(setq create-lockfiles nil)
+(setq backup-inhibited t)
 #+END_SRC
 
-** Korean language environment
+* Korean language environment
 #+BEGIN_SRC emacs-lisp
 (global-set-key [(shift space)] 'toggle-input-method)
 (set-language-environment "Korean")
@@ -32,18 +31,18 @@
 (setq default-korean-keyboard "3f")
 #+END_SRC
 
-** Font setup
+* Font setup
 #+BEGIN_SRC emacs-lisp
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
-  ;; (add-to-list 'default-frame-alist '(font . "Source Code Pro-11"))
-  ;; (set-face-font 'default "Source Code Pro-11")
-  (add-to-list 'default-frame-alist '(font . "Cascadia Code Light-11"))
-  (set-face-font 'default "Cascadia Code Light-11")
+  (add-to-list 'default-frame-alist '(font . "Aporetic Sans Mono-11"))
+  (set-face-font 'default "Aporetic Sans Mono-11")
+  ;; (add-to-list 'default-frame-alist '(font . "Aporetic Serif Mono-11"))
+  ;; (set-face-font 'default "Aporetic Serif Mono-11")
+  ;; (add-to-list 'default-frame-alist '(font . "Cascadia Code Light-11"))
+  ;; (set-face-font 'default "Cascadia Code Light-11")
   ;(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
   ;(set-face-font 'default "Fira Code-10")
-  ;(add-to-list 'default-frame-alist '(font . "Ubuntu Mono-11"))
-  ;(set-face-font 'default "Ubuntu Mono-11")
   ;(add-to-list 'default-frame-alist '(font . "Monaco-10"))
   ;(set-face-font 'default "Monaco-10")
   (set-fontset-font "fontset-default" '(#x1100 . #xffdc)
@@ -56,14 +55,14 @@
 (add-hook 'sever-switch-hook (my-font-setup))
 #+END_SRC
 
-** Custom lisp file path setup
+* Custom lisp file path setup
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/lisp")
 ;(load "~/.emacs.d/lisp/my-abbrev.el")
 ;(require 'diatheke)
 #+END_SRC
 
-** Package management setup
+* Package management setup
 #+BEGIN_SRC emacs-lisp
 (require 'package)
 (setq package-archives
@@ -81,18 +80,26 @@
 (setq use-package-always-ensure t)
 #+END_SRC
 
-** Theme & Mode line
-** color theme
+* Theme & Mode line
+** Color theme
 #+BEGIN_SRC emacs-lisp
 ;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(use-package atom-one-dark-theme)
-(use-package gruvbox-theme)
-(use-package solarized-theme)
+;; (load-theme 'gruvbox t)
+;; (load-theme 'atom-one-dark t)
 
-(load-theme 'gruvbox t)
-;(load-theme 'gruvbox-light-soft t)
-;(load-theme 'atom-one-dark t)
-;(load-theme 'solarized-dark t)
+(use-package modus-themes
+  :ensure t)
+
+(use-package standard-themes
+  :ensure t
+  :bind
+  (("<f5>" . modus-themes-rotate)
+   ("C-<f5>" . modus-themes-select)
+   ("M-<f5>" . mouds-themes-load-random))
+  :config
+  ;; (setq modus-themes-mixed-fonts t)
+  ;; (setq modus-themes-italic-constructs t)
+  (modus-themes-load-theme 'standard-light-tinted))
 #+END_SRC
 
 ** Powerline
@@ -104,7 +111,7 @@
   (powerline-center-theme))
 #+END_SRC
 
-** Completion
+* Completion
 #+BEGIN_SRC emacs-lisp
 ;; Use builtin completion engine
 (bind-key* "C-." #'completion-at-point)
@@ -147,6 +154,7 @@
 (use-package corfu
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)
   :init
   (global-corfu-mode))
 
@@ -201,8 +209,7 @@
 (use-package embark-consult :after (embark consult))
 #+END_SRC
 
-** Navigation: 
-** projectile
+* Projectile
 #+BEGIN_SRC emacs-lisp
 (use-package projectile)
 (projectile-mode +1)
@@ -211,14 +218,7 @@
 (projectile-global-mode)
 #+END_SRC
 
-** ace-jump-mode
-#+BEGIN_SRC emacs-lisp
-;; quick jump in a screen
-(use-package ace-jump-mode 
-  :bind ("C-." . ace-jump-mode))
-#+END_SRC
-
-** Editing
+* Editing
 #+BEGIN_SRC emacs-lisp
 ;;CTRLF (pronounced "control F") is an intuitive and efficient
 ;;solution for single-buffer text search
@@ -234,9 +234,15 @@
 
 ;; Highlights matching parenthesis
 (show-paren-mode 1)
+
+;; Temporarily highlights the current line after given function is invoked.
+(use-package pulsar
+  :ensure t
+  :init
+  (pulsar-global-mode 1))
 #+END_SRC
 
-** Magit
+* Magit
 #+BEGIN_SRC emacs-lisp
 ;; git integration
 (use-package magit
@@ -244,7 +250,7 @@
   :bind ("C-x g" . magit-status))
 #+END_SRC
 
-** Org-mode
+* Org-mode
 #+BEGIN_SRC emacs-lisp
 (use-package org-bullets)
 
@@ -309,14 +315,14 @@
 )
 #+END_SRC
 
-** Ledger mode
+* Ledger mode
 #+BEGIN_SRC emacs-lisp
-  (use-package ledger-mode
-    :defer t
-    :mode ("\\.ledger$" "\\.dat$"))
+(use-package ledger-mode
+  :defer t
+  :mode ("\\.ledger$" "\\.dat$"))
 #+END_SRC
 
-** AUCTeX
+* AUCTeX
 #+BEGIN_SRC emacs-lisp
 (use-package tex
   :ensure auctex
@@ -346,8 +352,8 @@
   (add-hook 'LaTeX-mode-hook #'diatheke-mode))
 #+END_SRC
 
-** Languages
-*** Tree-sitter
+* Languages
+** Tree-sitter
 #+begin_src emacs-lisp
 (use-package tree-sitter
   :config (global-tree-sitter-mode)
@@ -356,8 +362,8 @@
 (use-package tree-sitter-langs)
 #+end_src
 
-*** Elisp (paredit, eldoc)
-**** paredit
+** Elisp (paredit, eldoc)
+*** paredit
 ;; Automatically load paredit when editing a lisp file
 ;; More at http://www.emacswiki.org/emacs/ParEdit
 
@@ -375,7 +381,7 @@
   (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t))
 #+END_SRC
 
-**** eldoc-mode
+*** eldoc-mode
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
 #+BEGIN_SRC emacs-lisp
@@ -384,7 +390,7 @@
 (add-hook 'ielm-mode-hook 'eldoc-mode)
 #+END_SRC
 
-*** Haskell
+** Haskell
 #+BEGIN_SRC emacs-lisp
 (use-package hindent
   :hook
@@ -415,7 +421,19 @@
    ("C-c c" . haskell-process-cabal)))
 #+END_SRC
 
-** Snippets
+* Copilot
+# #+begin_src emacs-lisp
+# (use-package copilot
+#   :vc (:url "https://github.com/copilot-emacs/copilot.el"
+#             :rev :newest
+#             :branch "main")
+#   :hook
+#   (prog-mode . copilot-mode)
+#   :config
+#   (setopt copilot-lsp-settings '(:github-enterprise (:uri "https://example2.ghe.com"))))
+# #+end_src
+
+* Snippets
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
   :defer 15 ;; takes a while to load, so do it async
@@ -423,8 +441,8 @@
   :config (yas-global-mode)
   :custom (yas-prompt-functions '(yas-completing-prompt)))
 #+END_SRC
-** Others
-*** Show-font
+* Other goodies
+** Show-font
 #+begin_src emacs-lisp
 (use-package show-font
   :bind
