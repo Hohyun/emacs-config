@@ -59,24 +59,28 @@
 * Theme & Mode line
 ** Color theme
 #+BEGIN_SRC emacs-lisp
-;; (load-theme 'gruvbox t)
+(defun my-ef-themes-load-random ()
+  "Load a random ef-theme and setup font"
+  (interactive)
+  (ef-themes-load-random)
+  (my-font-setup))
 
 (use-package ef-themes
   :ensure t
   :bind
   (("<f5>" . ef-themes-rotate)
    ("C-<f5>" . ef-themes-select)
-   ("M-<f5>" . ef-themes-load-random))
+   ("M-<f5>" . my-ef-themes-load-random))
   :config
-  ;; (setq standard-themes-italic-constructs t)
-  (ef-themes-select 'ef-summer)
-  (my-font-setup))
+  (setq ef-themes-italic-constructs t)
+  (my-ef-themes-load-random))
 
 #+END_SRC
 
 ** Powerline
 #+BEGIN_SRC emacs-lisp
 (use-package powerline
+  :ensure t
   :init
   (setq powerline-default-separator 'wave)
   :config
@@ -97,7 +101,6 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa-stable" . "http://stable.melpa.org/packages/")
         ("melpa". "http://melpa.org/packages/")))
-(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -335,8 +338,8 @@
 
 * AUCTeX
 #+BEGIN_SRC emacs-lisp
-(use-package tex
-  :ensure auctex
+(use-package auctex
+  :ensure t
   :init
   (add-hook 'LaTeX-mode-hook #'diatheke-mode)
   (setq-default TeX-engine 'xetex)
@@ -434,12 +437,19 @@
 
 * Copilot
 #+begin_src emacs-lisp
+(use-package quelpa :ensure t)
+(use-package quelpa-use-package :ensure t)
+
 (use-package copilot
-  :vc (:url "https://github.com/copilot-emacs/copilot.el"
-            :rev :newest
-            :branch "main")
+  :quelpa (copilot :fetcher github
+                   :repo "copilot-emacs/copilot.el"
+                   :branch "main"
+                   :files ("*.el"))
   :hook
-  (prog-mode . copilot-mode))
+  (prog-mode . copilot-mode)
+  :bind
+  (:map copilot-completion-map
+   ("TAB" . copilot-accept-completion)))
 #+end_src
 
 * Snippets

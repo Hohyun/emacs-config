@@ -46,21 +46,24 @@
 (my-font-setup)
 (add-hook 'sever-switch-hook (my-font-setup))
 
-;; (load-theme 'gruvbox t)
+(defun my-ef-themes-load-random ()
+  "Load a random ef-theme and setup font"
+  (interactive)
+  (ef-themes-load-random)
+  (my-font-setup))
 
-(use-package standard-themes
+(use-package ef-themes
   :ensure t
   :bind
-  (("<f5>" . standard-themes-rotate)
-   ("C-<f5>" . standard-themes-select)
-   ("M-<f5>" . standard-themes-load-random))
+  (("<f5>" . ef-themes-rotate)
+   ("C-<f5>" . ef-themes-select)
+   ("M-<f5>" . my-ef-themes-load-random))
   :config
-  ;; (setq standard-themes-mixed-fonts t)
-  ;; (setq standard-themes-italic-constructs t)
-  (standard-themes-select 'standard-light)
-)
+  (setq ef-themes-italic-constructs t)
+  (my-ef-themes-load-random))
 
 (use-package powerline
+  :ensure t
   :init
   (setq powerline-default-separator 'wave)
   :config
@@ -75,7 +78,6 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa-stable" . "http://stable.melpa.org/packages/")
         ("melpa". "http://melpa.org/packages/")))
-(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -288,8 +290,8 @@
   :defer t
   :mode ("\\.ledger$" "\\.dat$"))
 
-(use-package tex
-  :ensure auctex
+(use-package auctex
+  :ensure t
   :init
   (add-hook 'LaTeX-mode-hook #'diatheke-mode)
   (setq-default TeX-engine 'xetex)
@@ -365,12 +367,19 @@
    ("C-c C-c" . haskell-process-cabal-build)
    ("C-c c" . haskell-process-cabal)))
 
+(use-package quelpa :ensure t)
+(use-package quelpa-use-package :ensure t)
+
 (use-package copilot
-  :vc (:url "https://github.com/copilot-emacs/copilot.el"
-            :rev :newest
-            :branch "main")
+  :quelpa (copilot :fetcher github
+                   :repo "copilot-emacs/copilot.el"
+                   :branch "main"
+                   :files ("*.el"))
   :hook
-  (prog-mode . copilot-mode))
+  (prog-mode . copilot-mode)
+  :bind
+  (:map copilot-completion-map
+   ("TAB" . copilot-accept-completion)))
 
 (use-package yasnippet
   :defer 15 ;; takes a while to load, so do it async
