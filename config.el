@@ -1,37 +1,24 @@
-(setq default-directory "~")
-
-;; inihibit cl warning
-(setq byte-compile-warnings '(cl-functions))
-
-(setq inhibit-splash-screen t) 
-;; Go straight to scratch buffer on startup
-(setq inhibit-startup-message t)
-
-;; Changes all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
-
-;; shell scripts
-(setq-default sh-basic-offset 2)
-(setq-default sh-indentation 2)
-
-;; No need for ~ files when editing
-(setq create-lockfiles nil)
-
+;; lexical-binding: t;
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-;; disable the toolbar
+;; inihibit cl warning
+(setq byte-compile-warnings '(cl-functions))
+
+(setq default-directory "~")
+(setq inhibit-splash-screen t) 
+(setq inhibit-startup-message t)
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (tool-bar-mode -1)
-
-;; disable menu on startup
 (menu-bar-mode -1)
-
-(global-visual-line-mode)  ;; word-wrap
-(setq backup-inhibited t)
-
-;; No cursor blinking
 (blink-cursor-mode 0)
+(global-visual-line-mode)
+
+;; No need for ~ files when editing
+(setq create-lockfiles nil)
+(setq backup-inhibited t)
 
 (global-set-key [(shift space)] 'toggle-input-method)
 (set-language-environment "Korean")
@@ -40,13 +27,16 @@
 
 (defun my-font-setup ()
   "Setup English font and harmoning Korean font"
-  ;(add-to-list 'default-frame-alist '(font . "Monaco-12"))
-  ;(set-face-font 'default "Monaco-12")
-  ;(add-to-list 'default-frame-alist '(font . "Consolas-11"))
-  ;(set-face-font 'default "Consolas-11")
-  (custom-set-faces
-   '(default ((t (:family "Cascadia Mono" :foundry "SAJA" :slant normal :weight regular :height 113 :width normal)))))
-
+  (add-to-list 'default-frame-alist '(font . "Aporetic Sans Mono-11"))
+  (set-face-font 'default "Aporetic Sans Mono-11")
+  ;; (add-to-list 'default-frame-alist '(font . "Aporetic Serif Mono-11"))
+  ;; (set-face-font 'default "Aporetic Serif Mono-11")
+  ;; (add-to-list 'default-frame-alist '(font . "Cascadia Code Light-11"))
+  ;; (set-face-font 'default "Cascadia Code Light-11")
+  ;(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
+  ;(set-face-font 'default "Fira Code-10")
+  ;(add-to-list 'default-frame-alist '(font . "Monaco-10"))
+  ;(set-face-font 'default "Monaco-10")
   (set-fontset-font "fontset-default" '(#x1100 . #xffdc)
                     '("HCR Dotum" . "iso10646-1"))
   (set-fontset-font "fontset-default" '(#xe0bc . #xf66e)
@@ -55,6 +45,29 @@
 
 (my-font-setup)
 (add-hook 'sever-switch-hook (my-font-setup))
+
+(defun my-ef-themes-load-random ()
+  "Load a random ef-theme and setup font"
+  (interactive)
+  (ef-themes-load-random)
+  (my-font-setup))
+
+(use-package ef-themes
+  :ensure t
+  :bind
+  (("<f5>" . ef-themes-rotate)
+   ("C-<f5>" . ef-themes-select)
+   ("M-<f5>" . my-ef-themes-load-random))
+  :config
+  (setq ef-themes-italic-constructs t)
+  (my-ef-themes-load-random))
+
+(use-package powerline
+  :ensure t
+  :init
+  (setq powerline-default-separator 'wave)
+  :config
+  (powerline-center-theme))
 
 (add-to-list 'load-path "~/.emacs.d/lisp")
 ;(load "~/.emacs.d/lisp/my-abbrev.el")
@@ -65,7 +78,6 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa-stable" . "http://stable.melpa.org/packages/")
         ("melpa". "http://melpa.org/packages/")))
-(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -75,63 +87,89 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
-;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(use-package atom-one-dark-theme)
-(use-package gruvbox-theme)
-(use-package solarized-theme)
+;; Use builtin completion engine
+(bind-key* "C-." #'completion-at-point)
 
-(load-theme 'gruvbox t)
-;(load-theme 'gruvbox-light-soft t)
-;(load-theme 'atom-one-dark t)
-;(load-theme 'solarized-dark t)
-
-(use-package powerline
+; The `vertico' package applies a vertical layout to the minibuffer.
+;; It also pops up the minibuffer eagerly so we can see the available
+;; options without further interactions.  This package is very fast
+;; and "just works", though it also is highly customisable in case we
+;; need to modify its behaviour.
+(use-package vertico
+  :custom
+  (vertico-count 22)
+  (vertico-cycle t)
   :init
-  (setq powerline-default-separator 'wave)
-  :config
-  (powerline-center-theme))
+  (vertico-mode))
 
-;; Emacs gives the buffers distinct names when several buffers visit identically-named files.
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
+;; The built-in `savehist-mode' saves minibuffer histories.  Vertico
+;; can then use that information to put recently selected options at
+;; the top.
+(savehist-mode 1)
 
-;; turn on recent file mode
-(setq recentf-save-file (concat user-emacs-directory ".recentf"))
-(require 'recentf)
-(recentf-mode 1)
-(setq recentf-max-menu-items 40)
+;; The `marginalia' package provides helpful annotations next to
+;; completion candidates in the minibuffer.  The information on
+;; display depends on the type of content.  If it is about files, it
+;; shows file permissions and the last modified date.  If it is a
+;; buffer, it shows the buffer's size, major mode, and the like.
+(use-package marginalia
+  :config (marginalia-mode))
 
-(use-package ido-completing-read+
-  :bind ("C-x C-b" . ibuffer)
+;; The `orderless' package lets the minibuffer use an out-of-order
+;; pattern matching algorithm.  It matches space-separated words or
+;; regular expressions in any order.
+(use-package orderless
+  :custom (completion-styles '(orderless basic)))
+
+;; Corfu enhances in-buffer completion with a small completion popup. The
+;; current candidates are shown in a popup below or above the point, and
+;; can be selected by moving up and down. Corfu is the minimalistic
+;;in-buffer completion counterpart of the Vertico minibuffer UI.
+(use-package corfu
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)
   :init
-  ;; This allows partial matches, e.g. "tl" will match "Tyrion Lannister"
-  (setq ido-enable-flex-matching t)
+  (global-corfu-mode))
 
-  ;; Turn this behavior off because it's annoying
-  (setq ido-use-filename-at-point nil)
+;; A few more useful configurations...
+(use-package emacs
+  :custom
+  (tab-always-indent 'complete))
 
-  ;; Don't try to match file across all "work" directories; only match files
-  ;; in the current directory displayed in the minibuffer
-  (setq ido-auto-merge-work-directories-length -1)
+;; The `consult' package provides lots of commands that are enhanced
+;; variants of basic, built-in functionality.  One of the headline
+;; features of `consult' is its preview facility, where it shows in
+;; another Emacs window the context of what is currently matched in
+;; the minibuffer.
+(use-package consult
+  :bind (("C-c i"     . consult-imenu)
+         ("C-c b"     . consult-project-buffer)
+         ("C-x b"     . consult-buffer)
+         ("C-c B"     . consult-bookmark)
+         ("C-c y"     . consult-yank-pop)
+         ("C-x C-f"   . find-file)
+         ("C-c C-h a" . describe-symbol)
+         ("M-s M-g"   . consult-ripgrep)
+         ("M-s M-f"   . consult-find)
+         ("M-s M-o"   . consult-outline)
+         ("M-s M-l"   . consult-line)))
 
-  ;; Includes buffer names of recently open files, even if they're not
-  ;; open now
-  (setq ido-use-virtual-buffers t)
+;; The `embark-consult' package is glue code to tie together `embark'
+;; and `consult'.
+(use-package embark-consult
+  :ensure t
+  :after (embark consult))
 
-  :config
-  (ido-mode t)
-  ;; This enables ido in all contexts where it could be useful, not just
-  ;; for selecting buffer and file names
-  (ido-ubiquitous-mode t)
-  (ido-everywhere t))
-
-;; Enhances M-x to allow easier execution of commands. 
-(use-package smex
-  :bind ("M-x" . smex)
-  :init
-  (setq smex-save-file (concat user-emacs-directory ".smex-items"))
-  :config
-  (smex-initialize))
+;; The `embark' package lets you target the thing or context at point
+;; and select an action to perform on it.  Use the `embark-act'
+;; command while over something to find relevant commands.
+(use-package embark
+  :ensure t
+  :bind (("C-." . embark-act)
+         :map minibuffer-local-map
+         ("C-c C-c" . embark-collect)
+         ("C-c C-e" . embark-export)))
 
 (use-package projectile)
 (projectile-mode +1)
@@ -139,45 +177,10 @@
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (projectile-global-mode)
 
-;; quick jump in a screen
-(use-package ace-jump-mode 
-  :bind ("C-." . ace-jump-mode))
-
-;; Auto completion
-(use-package company
-  :config
-  (global-company-mode))
-
-(global-set-key (kbd "M-/") 'hippie-expand)
-
-;; Lisp-friendly hippie expand
-(setq hippie-expand-try-functions-list
-      '(try-expand-dabbrev
-        try-expand-dabbrev-all-buffers
-        try-expand-dabbrev-from-kill
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol))
-
-;; Highlights matching parenthesis
-(show-paren-mode 1)
-
-;; Interactive search key bindings. By default, C-s runs
-;; isearch-forward, so this swaps the bindings.
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s") 'isearch-forward)
-(global-set-key (kbd "C-M-r") 'isearch-backward)
-
-;; Don't use hard tabs
-(setq-default indent-tabs-mode nil)
-
-;; When you visit a file, point goes to the last place where it
-;; was when you previously visited the same file.
-;; http://www.emacswiki.org/emacs/SavePlace
-(require 'saveplace)
-(setq-default save-place t)
-;; keep track of saved places in ~/.emacs.d/places
-(setq save-place-file (concat user-emacs-directory "places"))
+;;CTRLF (pronounced "control F") is an intuitive and efficient
+;;solution for single-buffer text search
+(use-package ctrlf
+ :config (ctrlf-mode))
 
 ;; comments
 (defun toggle-comment-on-line ()
@@ -186,162 +189,21 @@
   (comment-or-uncomment-region (line-beginning-position) (line-end-position)))
 (global-set-key (kbd "C-;") 'toggle-comment-on-line)
 
-;; use 2 spaces for tabs
-(defun die-tabs ()
-  (interactive)
-  (set-variable 'tab-width 2)
-  (mark-whole-buffer)
-  (untabify (region-beginning) (region-end))
-  (keyboard-quit))
+;; Highlights matching parenthesis
+(show-paren-mode 1)
 
-;; fix weird os x kill error
-(defun ns-get-pasteboard ()
-  "Returns the value of the pasteboard, or nil for unsupported formats."
-  (condition-case nil
-      (ns-get-selection-internal 'CLIPBOARD)
-    (quit nil)))
-
-(setq electric-indent-mode nil)
-
-(use-package paredit
-  :commands enable-paredit-mode
+;; Temporarily highlights the current line after given function is invoked.
+(use-package pulsar
+  :ensure t
   :init
-  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-  :config
-  (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t))
+  (pulsar-global-mode 1))
 
-(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-(add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
-(add-hook 'ielm-mode-hook 'eldoc-mode)
-
-(use-package rainbow-delimiters
-  :commands rainbow-delimiters-mode)
-
-(use-package clojure-mode
-  :commands clojure-mode
-  :init
-  ;; Enable paredit for Clojure
-  (add-hook 'clojure-mode-hook #'enable-paredit-mode)
-  ;; This is useful for working with camel-case tokens (e.g. JavaClassName)
-  (add-hook 'clojure-mode-hook #'subword-mode)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
-  ;(add-hook 'clojure-mode-hook #'inf-clojure-minor-mode)
-  ;; syntax hilighting for midje
-  (add-hook 'clojure-mode-hook
-            (lambda ()
-              (setq inferior-lisp-program "lein repl")
-              (font-lock-add-keywords
-              nil
-              '(("(\\(facts?\\)"
-                (1 font-lock-keyword-face))
-                ("(\\(background?\\)"
-                (1 font-lock-keyword-face))))
-                (define-clojure-indent (fact 1))
-                (define-clojure-indent (facts 1))))
-  :config
-  (use-package clojure-mode-extra-font-locking))
-
-(use-package cider
-  :commands cider-jack-in
-  :init
-  ;; auto completion
-  (add-hook 'cider-repl-mode-hook #'company-mode)
-  (add-hook 'cider-mode-hook #'company-mode)
-  ;; provides minibuffer documentation for the code you're typing into the repl
-  (add-hook 'cider-mode-hook 'eldoc-mode)
-  ;; enable paredit in your REPL
-  (add-hook 'cider-repl-mode-hook 'paredit-mode)
-  ;; go right to the REPL buffer when it's finished connecting
-  (setq cider-repl-pop-to-buffer-on-connect t)
-  ;; When there's a cider error, show its buffer and switch to it
-  (setq cider-show-error-buffer t)
-  (setq cider-auto-select-error-buffer t)
-  ;; Where to store the cider history.
-  (setq cider-repl-history-file "~/.emacs.d/cider-history")
-  ;; Wrap when navigating history.
-  (setq cider-repl-wrap-history t)
-  ;; Use clojure mode for other extensions
-  (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
-  ;;(add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
-
-;; edit html like sexps
-(use-package tagedit
-  :commands (tagedit-mode tagedit-add-paredit-like-keybindings))
-
-(use-package emmet-mode
-  :init
-  (add-hook 'clojure-mode-hook 'emmet-mode)
-  (add-hook 'sgml-mode-hook 'emmet-mode)
-  (add-hook 'css-mode-hook 'emmet-mode))
-
-(use-package web-mode
-  :init 
-  (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-
-  ;; Enable line numbers
-  ;; set type of line numbering (global variable)
-  (setq display-line-numbers-type 'relative) 
-
-  ;; activate line numbering in all buffers/modes
-  (global-display-line-numbers-mode)
-
-  ;; change spacing at top of buffer
-  (add-to-list 'default-frame-alist '(internal-border-width . 7)))
-
-;; javascript / html
-(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
-(add-hook 'js-mode-hook 'subword-mode)
-(add-hook 'html-mode-hook 'subword-mode)
-(setq js-indent-level 2)
-(eval-after-load "sgml-mode"
-  '(progn
-     (tagedit-add-paredit-like-keybindings)
-     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))))
-
-(use-package tex
-  :ensure auctex
-  :init
-  (add-hook 'LaTeX-mode-hook #'diatheke-mode)
-  (setq-default TeX-engine 'xetex)
-  (setq TeX-PDF-mode t)
-  (setq TeX-source-correlate-mode t)
-  (setq TeX-source-correlate-method '((pdf . synctex)))
-  (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
-  ;(setq TeXV-view-program-list
-  ;     '(("PDF Viewer" "C:/Users/jinair/AppData/Local/SumatraPDF/SumatraPdf.exe mode-io-correlate -forward-search %b %n %o")))
-  (eval-after-load "tex"
-    '(add-to-list 'TeX-expand-list '("%a" (lambda nil (expand-file-name (buffer-file-name))))))
-  (setq TeXV-view-program-list
-       '(("PDF Viewer" ("okular --unique %o" (mode-io-correlate "#src:%n%a")))))
-  (setenv "PATH" (concat "/Library/TeX/texbin" ":" (getenv "PATH")))
-
-  (add-hook 'LaTeX-mode-hook
-            (lambda()
-              (add-to-list 'TeX-command-list
-                           '("XeLaTeX" "%`xelatex%(mode)%' %t" TeX-run-TeX nil t))
-              (setq TeX-command-default "XeLaTeX")
-              (setq TeX-save-query nil)
-              (setq TeX-show-compilation t)))
-
-  (add-hook 'LaTeX-mode-hook #'diatheke-mode))
+;; git integration
+(use-package magit
+  :pin melpa-stable
+  :bind ("C-x g" . magit-status))
 
 (use-package org-bullets)
-
-(use-package ox-reveal)
 
 (use-package org
   :bind (("C-c l" . org-store-link)
@@ -350,7 +212,6 @@
          ("C-c b" . org-iswitchb))
   :init
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  (setq org-reveal-root "file:///home/hohyun/projects/reveal.js")
 
   (setq org-log-done t)
   (setq org-directory "~/org")
@@ -404,38 +265,79 @@
     ;;(use-package org-bullets)
 )
 
-;; git integration
-(use-package magit
-  :pin melpa-stable
-  :bind ("C-x g" . magit-status))
+(use-package org-roam
+  :hook
+  (after-intit . org-roam-mode)
+  :custom
+  (find-file-visit-truname t)
+  (org-roam-db-autosync-mode)
+  (org-roam-directory "~/org-roam/")
+  (org-roam-completion-everywhere t)
+  (org-roam-completion-system 'default)
+  (org-roam-capture-templates
+   '(("d" default plain
+      "%?"
+      :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+title: ${title}\n")
+      :unnarrowed t)))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
 
 (use-package ledger-mode
   :defer t
   :mode ("\\.ledger$" "\\.dat$"))
 
-(use-package rust-mode)
-
-(use-package cargo
-  :hook 
-  (rust-mode . cargo-minor-mode))
-
-(use-package racer
-  :ensure rust-mode
-
+(use-package auctex
+  :ensure t
   :init
-  (setq racer-cmd "c:/Users/jinair/.cargo/bin/racer")
-  (setq racer-rust-src-path "C:/Users/jinair/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust/src")
-  (setq company-tooltip-align-annotations t)
+  (add-hook 'LaTeX-mode-hook #'diatheke-mode)
+  (setq-default TeX-engine 'xetex)
+  (setq TeX-PDF-mode t)
+  (setq TeX-source-correlate-mode t)
+  (setq TeX-source-correlate-method '((pdf . synctex)))
+  (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
+  ;(setq TeXV-view-program-list
+  ;     '(("PDF Viewer" "C:/Users/jinair/AppData/Local/SumatraPDF/SumatraPdf.exe mode-io-correlate -forward-search %b %n %o")))
+  (eval-after-load "tex"
+    '(add-to-list 'TeX-expand-list '("%a" (lambda nil (expand-file-name (buffer-file-name))))))
+  (setq TeXV-view-program-list
+       '(("PDF Viewer" ("okular --unique %o" (mode-io-correlate "#src:%n%a")))))
+  (setenv "PATH" (concat "/Library/TeX/texbin" ":" (getenv "PATH")))
 
-  :hook
-  (rust-mode . racer-mode)
-  (racer-mode . eldoc-mode)
-  (racer-mode . company-mode))
+  (add-hook 'LaTeX-mode-hook
+            (lambda()
+              (add-to-list 'TeX-command-list
+                           '("XeLaTeX" "%`xelatex%(mode)%' %t" TeX-run-TeX nil t))
+              (setq TeX-command-default "XeLaTeX")
+              (setq TeX-save-query nil)
+              (setq TeX-show-compilation t)))
 
-(use-package go-mode)
+  (add-hook 'LaTeX-mode-hook #'diatheke-mode))
 
-(use-package lsp-mode
-  :hook (go-mode . lsp-deferred))
+(use-package tree-sitter
+  :config (global-tree-sitter-mode)
+  :after (tree-sitter-hl-mode))
+  
+(use-package tree-sitter-langs)
+
+(use-package paredit
+  :commands enable-paredit-mode
+  :init
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+  :config
+  (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t))
+
+(add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
+(add-hook 'ielm-mode-hook 'eldoc-mode)
 
 (use-package hindent
   :hook
@@ -464,3 +366,28 @@
    ("C-c C-l" . haskell-process-load-or-reload)
    ("C-c C-c" . haskell-process-cabal-build)
    ("C-c c" . haskell-process-cabal)))
+
+(use-package quelpa :ensure t)
+(use-package quelpa-use-package :ensure t)
+
+(use-package copilot
+  :quelpa (copilot :fetcher github
+                   :repo "copilot-emacs/copilot.el"
+                   :branch "main"
+                   :files ("*.el"))
+  :hook
+  (prog-mode . copilot-mode)
+  :bind
+  (:map copilot-completion-map
+   ("TAB" . copilot-accept-completion)))
+
+(use-package yasnippet
+  :defer 15 ;; takes a while to load, so do it async
+  :diminish yas-minor-mode
+  :config (yas-global-mode)
+  :custom (yas-prompt-functions '(yas-completing-prompt)))
+
+(use-package show-font
+  :bind
+  (("C-c s f" . show-font-select-preview)
+   ("C-c s t" . show-font-tabulated)))
