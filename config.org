@@ -1,6 +1,32 @@
-# -*- mode: org; coding: utf-8; lexical-binding: t; -*-
+# -*- mode: org; coding: utf-8; -*-
+* Package management setup
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("melpa-stable" . "http://stable.melpa.org/packages/")
+        ("melpa". "http://melpa.org/packages/")))
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
+#+END_SRC
+
+* Custom lisp file path setup
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/lisp")
+;(load "~/.emacs.d/lisp/my-abbrev.el")
+;(require 'diatheke)
+#+END_SRC
+
 * Default option
 #+BEGIN_SRC emacs-lisp
+;; -*- lexical-binding: t; -*-
 ;; Don't show native OS scroll bars for buffers because they're redundant
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
@@ -55,51 +81,26 @@
 (add-hook 'sever-switch-hook (my-font-setup))
 #+END_SRC
 
-* Custom lisp file path setup
-#+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "~/.emacs.d/lisp")
-;(load "~/.emacs.d/lisp/my-abbrev.el")
-;(require 'diatheke)
-#+END_SRC
-
-* Package management setup
-#+BEGIN_SRC emacs-lisp
-(require 'package)
-(setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
-        ("melpa-stable" . "http://stable.melpa.org/packages/")
-        ("melpa". "http://melpa.org/packages/")))
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(require 'use-package)
-
-(require 'use-package-ensure)
-(setq use-package-always-ensure t)
-#+END_SRC
-
 * Theme & Mode line
 ** Color theme
 #+BEGIN_SRC emacs-lisp
-;(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-;; (load-theme 'gruvbox t)
-;; (load-theme 'atom-one-dark t)
+;(load-theme 'gruvbox t)
+(defun my-ef-themes-load-random ()
+  "Load a random ef-theme and setup font"
+  (interactive)
+  (ef-themes-load-random)
+  (my-font-setup))
 
-(use-package modus-themes
-  :ensure t)
-
-(use-package standard-themes
+(use-package ef-themes
   :ensure t
   :bind
-  (("<f5>" . modus-themes-rotate)
-   ("C-<f5>" . modus-themes-select)
-   ("M-<f5>" . mouds-themes-load-random))
+  (("<f5>" . ef-themes-rotate)
+   ("C-<f5>" . ef-themes-select)
+   ("M-<f5>" . my-ef-themes-load-random))
   :config
-  ;; (setq modus-themes-mixed-fonts t)
-  ;; (setq modus-themes-italic-constructs t)
-  (modus-themes-load-theme 'standard-light-tinted))
+  (setq ef-themes-italic-constructs t)
+  :init
+  (my-ef-themes-load-random))
 #+END_SRC
 
 ** Powerline
@@ -324,8 +325,8 @@
 
 * AUCTeX
 #+BEGIN_SRC emacs-lisp
-(use-package tex
-  :ensure auctex
+(use-package auctex
+  :ensure t
   :init
   (add-hook 'LaTeX-mode-hook #'diatheke-mode)
   (setq-default TeX-engine 'xetex)
@@ -422,17 +423,24 @@
 #+END_SRC
 
 * Copilot
-# #+begin_src emacs-lisp
-# (use-package copilot
-#   :vc (:url "https://github.com/copilot-emacs/copilot.el"
-#             :rev :newest
-#             :branch "main")
-#   :hook
-#   (prog-mode . copilot-mode)
-#   :config
-#   (setopt copilot-lsp-settings '(:github-enterprise (:uri "https://example2.ghe.com"))))
-# #+end_src
+#+begin_src emacs-lisp
+(use-package copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el"
+            :rev :newest
+            :branch "main"))
 
+(add-hook 'prog-mode-hook 'copilot-mode)
+(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+#+end_src
+
+* Gptel
+#+begin_src emacs-lisp
+(use-package gptel
+  :ensure t
+  :config
+  (setq gpter-model 'gpt-4o
+	gptel-backend (gptel-make-gh-copilot "Copilot")))
+#+end_src
 * Snippets
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
