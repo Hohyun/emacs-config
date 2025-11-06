@@ -449,14 +449,18 @@
   (setq gptel-default-mode 'org-mode)
   (gptel-highlight-mode))
 #+end_src
-* Snippets
-#+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :defer 15 ;; takes a while to load, so do it async
-  :diminish yas-minor-mode
-  :config (yas-global-mode)
-  :custom (yas-prompt-functions '(yas-completing-prompt)))
-#+END_SRC
+
+* Aidermacs
+#+begin_src emacs-lisp
+(use-package aidermacs
+  :ensure t
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :config
+  :custom
+  ; See the Configuration section below
+  (aidermacs-default-model "gpt-4.1"))
+#+end_src
+
 * Other goodies
 ** Show-font
 #+begin_src emacs-lisp
